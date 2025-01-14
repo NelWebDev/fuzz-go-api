@@ -3,39 +3,37 @@ package fuzz
 import (
 	"fmt"
 	"fuzzing-api/api"
-	"fuzzing-api/logger"
+	"fuzzing-api/utils"
 	"net/url"
 	"testing"
 )
 
 func FuzzGetEndpoint(f *testing.F) {
-	client := api.NewAPIClient("https://fakerestapi.azurewebsites.net/api/v1")
-	log := logger.NewLogger("generatedSeeds/get_seeds.json")
+	// Cargar la configuración
+	config, err := utils.LoadConfig("../config/config.json")
+	if err != nil {
+		f.Fatalf("Error al cargar la configuración: %v", err)
+	}
 
-	// Semillas iniciales
-	f.Add("1")
-	f.Add("2")
-	f.Add("invalid_id")
+	// Crear el cliente API con la baseURL desde la configuración
+	client := api.NewAPIClient(config.BaseURL)
 
-	f.Fuzz(func(t *testing.T, id string) {
-		escapedID := url.QueryEscape(id)
-		endpoint := fmt.Sprintf("/Activities/%s", escapedID)
+	// Semilla para fuzzing
+	f.Add(config.Endpoints.Get)
 
-		body, statusCode, err := client.Get(endpoint)
+	f.Fuzz(func(t *testing.T, endpoint string) {
+		// Escapar la URL para evitar problemas con caracteres especiales
+		escapedEndpoint := url.QueryEscape(endpoint)
+		url := fmt.Sprintf("%s%s", config.BaseURL, escapedEndpoint)
+
+		resp, status, err := client.Get(url) // Obtener tres valores: response, status, error
 		if err != nil {
-			t.Logf("Error en GET: %v, ID: %s", err, id)
+			t.Errorf("Error en la solicitud GET: %v", err)
 			return
 		}
 
-		if statusCode >= 400 {
-			t.Logf("GET falló con estado %d, cuerpo: %s", statusCode, string(body))
-			return
+		if resp.StatusCode != status {
+			t.Errorf("Código de estado inesperado: %d, esperado: %d", resp.StatusCode, status)
 		}
-
-		// Registrar solo semillas nuevas
-		log.LogSeed(endpoint)
 	})
-
-	// Generar el reporte HTML en la carpeta /fuzz/reports
-	defer log.GenerateHTMLReport("reports/fuzz_get_report.html")
 }

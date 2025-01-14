@@ -1,0 +1,7 @@
+{
+  "baseURL": "https://fakerestapi.azurewebsites.net/api/v1",
+  "endpoints": {
+    "get": "/Activities/{id}",
+    "post": "/Activities"
+  }
+}

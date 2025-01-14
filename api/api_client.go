@@ -1,54 +1,35 @@
 package api
 
 import (
-	"bytes"
-	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
-type APIClient struct {
-	baseURL string
-	client  *http.Client
-}
-
-// Crear un nuevo cliente API
+// NewAPIClient crea un cliente con la URL base
 func NewAPIClient(baseURL string) *APIClient {
-	return &APIClient{
-		baseURL: baseURL,
-		client:  &http.Client{},
-	}
+	return &APIClient{BaseURL: baseURL}
 }
 
-// Método para realizar una petición GET
-func (a *APIClient) Get(endpoint string) ([]byte, int, error) {
-	url := a.baseURL + endpoint
-	resp, err := a.client.Get(url)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return body, resp.StatusCode, nil
+type APIClient struct {
+	BaseURL string
 }
 
-// Método para realizar una petición POST
-func (a *APIClient) Post(endpoint, data string) ([]byte, int, error) {
-	url := a.baseURL + endpoint
-	resp, err := a.client.Post(url, "application/json", bytes.NewBufferString(data))
-	if err != nil {
-		return nil, 0, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+// GET request
+func (c *APIClient) Get(endpoint string) (*http.Response, int, error) {
+	resp, err := http.Get(endpoint)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return body, resp.StatusCode, nil
+	return resp, resp.StatusCode, nil
+}
+
+// POST request
+func (c *APIClient) Post(endpoint string, data string) (*http.Response, int, error) {
+	resp, err := http.Post(endpoint, "application/json", strings.NewReader(data))
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return resp, resp.StatusCode, nil
 }
