@@ -1,7 +1,8 @@
 # Archivos de compilación y módulos
 /bin
 /pkg
-/testdata
+/testdata/fuzz
+/reports
 
 # Archivos de editor
 .idea/
@@ -11,7 +12,7 @@
 *.tmp
 *.out
 *.html
-
-fuzz/testdata/fuzz/FuzzPostEndpoint/7c80ad3272a57b0ddd065b532d8c43ab30d79e6555150e05d1f614faf8e69120
-fuzz/testdata/fuzz/FuzzGetEndpoint/00946c290ec1480d281cb2a1f3cbb979a5ffea4453aaa62806abef46c984ec50
-fuzz_results.json
+fuzz/testdata/fuzz/FuzzGetEndpoint/
+fuzz/testdata/fuzz/FuzzPostEndpoint/
+fuzz/generatedSeeds/get_seeds.json
+fuzz/generatedSeeds/post_seeds.json

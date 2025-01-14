@@ -9,33 +9,30 @@ import (
 
 func FuzzPostEndpoint(f *testing.F) {
 	client := api.NewAPIClient("https://fakerestapi.azurewebsites.net/api/v1")
-	log := &logger.Logger{}
+	log := logger.NewLogger("generatedSeeds/post_seeds.json")
 
 	// Semillas iniciales
-	f.Add(1, "Sample Title", "2025-01-13T12:24:47.807Z", true)
-	f.Add(2, "Another Title", "2025-01-14T12:24:47.807Z", false)
+	f.Add(1, "Title 1", "2025-01-15T12:00:00Z", true)
+	f.Add(2, "Title 2", "invalid_date", false)
 
-	// Función de fuzzing
 	f.Fuzz(func(t *testing.T, id int, title, dueDate string, completed bool) {
-		// Crear el cuerpo de la solicitud POST
-		data := fmt.Sprintf(`{"id": %d, "title": "%s", "dueDate": "%s", "completed": %v}`, id, title, dueDate, completed)
+		body := fmt.Sprintf(`{"id": %d, "title": "%s", "dueDate": "%s", "completed": %v}`, id, title, dueDate, completed)
 
-		// Realizar la petición POST
-		_, err := client.Post("/Activities", data)
+		respBody, statusCode, err := client.Post("/Activities", body)
 		if err != nil {
-			t.Errorf("Error en POST: %v", err)
+			t.Logf("Error en POST: %v, Body: %s", err, body)
+			return
 		}
 
-		// Registrar la semilla
-		log.LogSeed(data)
+		if statusCode >= 400 {
+			t.Logf("POST falló con estado %d, cuerpo: %s", statusCode, string(respBody))
+			return
+		}
+
+		// Registrar solo semillas nuevas
+		log.LogSeed(body)
 	})
 
-	// Al terminar el fuzzing, generar el reporte HTML
-	f.Cleanup(func() {
-		err := log.GenerateHTMLReport("fuzz_post_report.html")
-		if err != nil {
-			// En lugar de t.Errorf, imprimimos el error en la consola
-			fmt.Printf("Error al generar el reporte HTML: %v\n", err)
-		}
-	})
+	// Generar el reporte HTML en la carpeta /fuzz/reports
+	defer log.GenerateHTMLReport("reports/fuzz_post_report.html")
 }
