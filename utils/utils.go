@@ -4,53 +4,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"text/template"
 )
 
-// SaveSeeds guarda las semillas generadas en un archivo JSON
-func SaveSeeds(filename string, seeds []string) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("error al crear el archivo de semillas: %w", err)
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(seeds); err != nil {
-		return fmt.Errorf("error al guardar las semillas: %w", err)
-	}
-	return nil
+// Config representa la estructura del archivo de configuración
+type Config struct {
+	BaseURL   string `json:"baseURL"`
+	Endpoints struct {
+		Get  string `json:"get"`
+		Post string `json:"post"`
+	} `json:"endpoints"`
+	Bodies struct {
+		Post interface{} `json:"post"`
+	} `json:"bodies"`
 }
 
-// GenerateHTMLReport genera un reporte HTML a partir de las semillas
-func GenerateHTMLReport(filename string, seeds []string) error {
-	tmpl := `<html>
-		<head><title>Fuzzing Report</title></head>
-		<body>
-		<h1>Reporte de Fuzzing</h1>
-		<ul>
-			{{range .}}
-				<li>{{.}}</li>
-			{{end}}
-		</ul>
-		</body>
-		</html>`
-
-	t, err := template.New("report").Parse(tmpl)
+// LoadConfig carga la configuración desde un archivo JSON
+func LoadConfig(filePath string) (*Config, error) {
+	file, err := os.Open(filePath)
 	if err != nil {
-		return fmt.Errorf("error al parsear el template: %w", err)
-	}
-
-	file, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("error al crear el archivo HTML: %w", err)
+		return nil, fmt.Errorf("error al abrir el archivo de configuración: %w", err)
 	}
 	defer file.Close()
 
-	if err := t.Execute(file, seeds); err != nil {
-		return fmt.Errorf("error al generar el reporte HTML: %w", err)
+	var config Config
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&config); err != nil {
+		return nil, fmt.Errorf("error al decodificar el archivo de configuración: %w", err)
 	}
 
-	return nil
+	return &config, nil
 }

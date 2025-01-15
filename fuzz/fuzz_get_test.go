@@ -26,12 +26,15 @@ func FuzzGetEndpoint(f *testing.F) {
 		escapedEndpoint := url.QueryEscape(endpoint)
 		url := fmt.Sprintf("%s%s", config.BaseURL, escapedEndpoint)
 
-		resp, status, err := client.Get(url) // Obtener tres valores: response, status, error
+		// Realizar la solicitud GET
+		resp, status, err := client.Get(url)
 		if err != nil {
 			t.Errorf("Error en la solicitud GET: %v", err)
 			return
 		}
+		defer resp.Body.Close()
 
+		// Comprobar el código de estado
 		if resp.StatusCode != status {
 			t.Errorf("Código de estado inesperado: %d, esperado: %d", resp.StatusCode, status)
 		}

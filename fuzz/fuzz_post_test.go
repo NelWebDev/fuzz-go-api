@@ -27,29 +27,23 @@ func FuzzPostEndpoint(f *testing.F) {
 		escapedEndpoint := url.QueryEscape(endpoint)
 		url := fmt.Sprintf("%s%s", config.BaseURL, escapedEndpoint)
 
-		// Crear el cuerpo de la solicitud POST
-		body := map[string]interface{}{
-			"id":        "1",
-			"title":     "Test",
-			"dueDate":   "2025-01-01T00:00:00Z",
-			"completed": false,
-		}
+		// Obtener el cuerpo de la solicitud POST desde la configuración
+		body := config.Bodies.Post
 		bodyJSON, err := json.Marshal(body)
 		if err != nil {
 			t.Errorf("Error al crear el JSON del cuerpo de la solicitud: %v", err)
 			return
 		}
 
-		// Si el cliente POST requiere un string en lugar de bytes.NewBuffer, lo convertimos a string
-		bodyString := string(bodyJSON)
-
 		// Realizar la solicitud POST
-		resp, status, err := client.Post(url, bodyString) // Usamos bodyString como string
+		resp, status, err := client.Post(url, string(bodyJSON))
 		if err != nil {
 			t.Errorf("Error en la solicitud POST: %v", err)
 			return
 		}
+		defer resp.Body.Close()
 
+		// Comprobar el código de estado
 		if resp.StatusCode != status {
 			t.Errorf("Código de estado inesperado: %d, esperado: %d", resp.StatusCode, status)
 		}

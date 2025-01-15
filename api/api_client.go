@@ -5,13 +5,14 @@ import (
 	"strings"
 )
 
+// APIClient representa el cliente de la API
+type APIClient struct {
+	BaseURL string
+}
+
 // NewAPIClient crea un cliente con la URL base
 func NewAPIClient(baseURL string) *APIClient {
 	return &APIClient{BaseURL: baseURL}
-}
-
-type APIClient struct {
-	BaseURL string
 }
 
 // GET request
@@ -20,7 +21,6 @@ func (c *APIClient) Get(endpoint string) (*http.Response, int, error) {
 	if err != nil {
 		return nil, 0, err
 	}
-
 	return resp, resp.StatusCode, nil
 }
 
@@ -30,6 +30,5 @@ func (c *APIClient) Post(endpoint string, data string) (*http.Response, int, err
 	if err != nil {
 		return nil, 0, err
 	}
-
 	return resp, resp.StatusCode, nil
 }
