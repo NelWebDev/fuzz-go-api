@@ -1,90 +1,68 @@
 # Fuzzing API Testing
 
-Este proyecto realiza pruebas de fuzzing en una API REST utilizando Go, con el objetivo de descubrir posibles vulnerabilidades o fallos en el comportamiento de la API al recibir entradas inesperadas o malformadas.
+This project is a fuzz testing framework for API endpoints. It uses Golang to perform fuzz tests on GET and POST requests, with configurations stored in a JSON file for flexibility and ease of reuse.
 
-Las pruebas de fuzzing se realizan tanto en los endpoints GET como POST de la API.
+## Features
 
-## Estructura del Proyecto
+- **GET and POST Testing**: Test API endpoints for GET and POST requests using fuzzing techniques.
+- **Configuration**: Easily manage base URL, endpoints, and request bodies via a JSON configuration file.
+- **Error Handling**: Logs errors effectively to identify issues.
+- **Fuzzing Reports**: Generate test reports automatically.
 
-La estructura del proyecto es la siguiente:
+## Project Structure
 
-fuzzing-api/ │ ├── api/ # Cliente de la API (para hacer peticiones GET y POST) ├── logger/ # Logger para registrar las semillas generadas durante las pruebas ├── fuzz/ # Pruebas de fuzzing para los endpoints de la API │ ├── fuzz_get_test.go # Test de fuzzing para la petición GET │ └── fuzz_post_test.go# Test de fuzzing para la petición POST ├── main.go # Punto de entrada del programa └── README.md # Este archivo
+```plaintext
+fuzzing-api/
+|-- config/
+|   `-- config.json           # Configuration file (base URL, endpoints, and request bodies)
+|-- fuzz/
+|   |-- fuzz_get_test.go      # Fuzz tests for GET requests
+|   `-- fuzz_post_test.go     # Fuzz tests for POST requests
+|-- utils/
+|   `-- utils.go              # Utility functions (configuration loading, helpers)
+|-- api/
+    `-- client.go             # API client implementation
+```
 
-less
-Copiar código
+## Configuration
 
-## Instalación
+The `config.json` file should be placed in the `config/` directory. Example:
 
-Para ejecutar este proyecto, necesitas tener Go instalado en tu máquina. Si aún no lo tienes, puedes descargarlo desde [aquí](https://golang.org/dl/).
+```json
+{
+  "base_url": "https://example.com/api/v1/",
+  "endpoints": {
+    "get": "/resources",
+    "post": "/resources"
+  },
+  "bodies": {
+    "post": {
+      "id": 1,
+      "name": "example",
+      "completed": false
+    }
+  }
+}
+```
 
-1. **Clonar el repositorio**:
+## Usage
 
-   Si aún no has clonado el repositorio, puedes hacerlo con el siguiente comando:
-
+1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/tu-usuario/fuzzing-api.git
+   git clone https://github.com/your-username/fuzzing-api.git
    cd fuzzing-api
-Instalar dependencias:
+   ```
 
-Asegúrate de que Go esté instalado en tu sistema y luego instala las dependencias necesarias:
-
-bash
-Copiar código
-go mod tidy
-Ejecución de las Pruebas de Fuzzing
-Este proyecto incluye pruebas de fuzzing tanto para el endpoint GET como para el endpoint POST de la API.
-
-1. Pruebas de Fuzzing para GET
-Para ejecutar las pruebas de fuzzing para el endpoint GET, utiliza el siguiente comando:
-
-bash
-Copiar código
-go test -fuzz=FuzzGetEndpoint -fuzztime=30s
-Esto ejecutará las pruebas de fuzzing en el endpoint GET y generará un reporte HTML con las semillas generadas.
-
-2. Pruebas de Fuzzing para POST
-Para ejecutar las pruebas de fuzzing para el endpoint POST, utiliza el siguiente comando:
-
-bash
-Copiar código
-go test -fuzz=FuzzPostEndpoint -fuzztime=30s
-Al igual que para el GET, las pruebas para el endpoint POST también generarán un reporte HTML con las semillas utilizadas.
-
-Reportes HTML
-Después de ejecutar las pruebas de fuzzing, se generarán archivos HTML con los reportes. Los reportes contienen las semillas generadas durante las pruebas.
-
-El reporte de las pruebas GET será guardado en un archivo llamado fuzz_get_report.html.
-El reporte de las pruebas POST será guardado en un archivo llamado fuzz_post_report.html.
-Puedes abrir estos archivos en cualquier navegador para ver las semillas generadas durante las pruebas.
-
-Explicación de la Estructura de las Pruebas
-Fuzzing para el Endpoint GET
-Realiza peticiones al endpoint /Activities/{id}, donde {id} es una semilla que puede contener caracteres inesperados, como caracteres Unicode o secuencias malformadas.
-
-Fuzzing para el Endpoint POST
-Envía datos malformados a la API en el cuerpo de la solicitud POST. La API de ejemplo espera un JSON con un objeto que tiene campos como id, title, dueDate y completed.
-
-Registro de Semillas
-Durante las pruebas, todas las URL y datos de las solicitudes generadas se registran. Los detalles de cada semilla generada se incluyen en el reporte HTML generado al final de las pruebas.
-
-Contribuciones
-Si deseas contribuir al proyecto, siéntete libre de hacer un fork del repositorio y enviar pull requests.
-
-Contacto
-Si tienes alguna duda o pregunta, no dudes en abrir un issue en el repositorio o contactarnos directamente.
-
-markdown
-Copiar código
-
-### Instrucciones para crear el archivo
-
-1. **Crear el archivo README.md**: 
-   Abre tu editor de texto preferido, crea un archivo nuevo llamado `README.md` y copia el contenido anterior en el archivo.
-
-2. **Subir a tu repositorio**:
-   Si ya tienes un repositorio en GitHub, puedes subir este archivo con los siguientes comandos:
-
+2. **Run Tests:**
    ```bash
-   git add README.md
-   git commit -m "Añadir README con instrucciones"
-   git push origin main
+   go test -fuzz=FuzzGetEndpoint -fuzztime=30s ./fuzz
+   go test -fuzz=FuzzPostEndpoint -fuzztime=30s ./fuzz
+   ```
+
+3. **Modify Configuration:**
+   Edit the `config/config.json` file to update base URLs, endpoints, or request bodies for your API.
+
+## Requirements
+
+- **Go version**: 1.20+
+
