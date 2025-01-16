@@ -1,15 +1,15 @@
 {
-  "baseURL": "https://fakerestapi.azurewebsites.net/api/v1/",
+  "baseURL": "https://fakerestapi.azurewebsites.net/api/v1",
   "endpoints": {
-    "get": "Activities/1",
-    "post": "Activities"
+    "get": "/Activities",
+    "post": "/Activities"
   },
-  "bodies": {
-    "post": {
-      "id": 1,
-      "title": "Test Activity",
-      "dueDate": "2025-01-14T22:14:39.880Z",
-      "completed": true
-    }
+  "requestBody": {
+    "id": 1,
+    "title": "Test Activity",
+    "dueDate": "2025-01-01T00:00:00Z",
+    "completed": false
   }
 }
+
+

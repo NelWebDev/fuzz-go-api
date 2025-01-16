@@ -3,40 +3,40 @@ package fuzz
 import (
 	"fmt"
 	"fuzzing-api/api"
+	"fuzzing-api/logger"
 	"fuzzing-api/utils"
+	"io/ioutil"
 	"net/url"
 	"testing"
 )
 
 func FuzzGetEndpoint(f *testing.F) {
-	// Cargar la configuración
 	config, err := utils.LoadConfig("../config/config.json")
 	if err != nil {
 		f.Fatalf("Error al cargar la configuración: %v", err)
 	}
 
-	// Crear el cliente API con la baseURL desde la configuración
 	client := api.NewAPIClient(config.BaseURL)
-
-	// Semilla para fuzzing
 	f.Add(config.Endpoints.Get)
 
-	f.Fuzz(func(t *testing.T, endpoint string) {
-		// Escapar la URL para evitar problemas con caracteres especiales
-		escapedEndpoint := url.QueryEscape(endpoint)
-		url := fmt.Sprintf("%s%s", config.BaseURL, escapedEndpoint)
+	f.Fuzz(func(t *testing.T, seed string) {
+		escapedSeed := url.QueryEscape(seed)
+		url := fmt.Sprintf("%s%s", config.BaseURL, escapedSeed)
 
-		// Realizar la solicitud GET
-		resp, status, err := client.Get(url)
+		resp, statusCode, duration, err := client.Get(url)
 		if err != nil {
+			logger.LogRequest("GET", url, seed, 0, duration, "", fmt.Sprintf("Error: %v", err))
 			t.Errorf("Error en la solicitud GET: %v", err)
 			return
 		}
 		defer resp.Body.Close()
 
-		// Comprobar el código de estado
-		if resp.StatusCode != status {
-			t.Errorf("Código de estado inesperado: %d, esperado: %d", resp.StatusCode, status)
+		body, _ := ioutil.ReadAll(resp.Body)
+		logger.LogRequest("GET", url, seed, statusCode, duration, "", string(body))
+
+		// Manejo de códigos HTTP
+		if statusCode >= 500 {
+			t.Errorf("Error del servidor: %d para la semilla: %s", statusCode, seed)
 		}
 	})
 }

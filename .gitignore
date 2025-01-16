@@ -16,3 +16,4 @@ fuzz/testdata/fuzz/FuzzGetEndpoint/
 fuzz/testdata/fuzz/FuzzPostEndpoint/
 fuzz/generatedSeeds/get_seeds.json
 fuzz/generatedSeeds/post_seeds.json
+fuzz/http_logs.txt

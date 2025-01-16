@@ -1,34 +1,45 @@
 package api
 
 import (
+	"bytes"
 	"net/http"
-	"strings"
+	"time"
 )
 
-// APIClient representa el cliente de la API
 type APIClient struct {
 	BaseURL string
+	Client  *http.Client
 }
 
-// NewAPIClient crea un cliente con la URL base
 func NewAPIClient(baseURL string) *APIClient {
-	return &APIClient{BaseURL: baseURL}
+	return &APIClient{
+		BaseURL: baseURL,
+		Client:  &http.Client{},
+	}
 }
 
-// GET request
-func (c *APIClient) Get(endpoint string) (*http.Response, int, error) {
-	resp, err := http.Get(endpoint)
+// Realizar solicitud GET
+func (c *APIClient) Get(endpoint string) (*http.Response, int, time.Duration, error) {
+	start := time.Now()
+	resp, err := c.Client.Get(endpoint)
+	duration := time.Since(start)
+
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, duration, err
 	}
-	return resp, resp.StatusCode, nil
+
+	return resp, resp.StatusCode, duration, nil
 }
 
-// POST request
-func (c *APIClient) Post(endpoint string, data string) (*http.Response, int, error) {
-	resp, err := http.Post(endpoint, "application/json", strings.NewReader(data))
+// Realizar solicitud POST
+func (c *APIClient) Post(endpoint string, data string) (*http.Response, int, time.Duration, error) {
+	start := time.Now()
+	resp, err := c.Client.Post(endpoint, "application/json", bytes.NewBufferString(data))
+	duration := time.Since(start)
+
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, duration, err
 	}
-	return resp, resp.StatusCode, nil
+
+	return resp, resp.StatusCode, duration, nil
 }
