@@ -7,7 +7,6 @@ import (
 	"fuzzing-api/logger"
 	"fuzzing-api/utils"
 	"io/ioutil"
-	"net/url"
 	"testing"
 )
 
@@ -21,8 +20,7 @@ func FuzzPostEndpoint(f *testing.F) {
 	f.Add(config.Endpoints.Post)
 
 	f.Fuzz(func(t *testing.T, seed string) {
-		escapedSeed := url.QueryEscape(seed)
-		url := fmt.Sprintf("%s%s", config.BaseURL, escapedSeed)
+		url := fmt.Sprintf("%s%s", config.BaseURL, seed)
 
 		body := config.RequestBody
 		bodyJSON, _ := json.Marshal(body)
