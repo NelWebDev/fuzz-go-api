@@ -6,7 +6,6 @@ import (
 	"fuzzing-api/logger"
 	"fuzzing-api/utils"
 	"io/ioutil"
-	"net/url"
 	"testing"
 )
 
@@ -20,8 +19,7 @@ func FuzzGetEndpoint(f *testing.F) {
 	f.Add(config.Endpoints.Get)
 
 	f.Fuzz(func(t *testing.T, seed string) {
-		escapedSeed := url.QueryEscape(seed)
-		url := fmt.Sprintf("%s%s", config.BaseURL, escapedSeed)
+		url := fmt.Sprintf("%s%s", config.BaseURL, seed)
 
 		resp, statusCode, duration, err := client.Get(url)
 		if err != nil {
