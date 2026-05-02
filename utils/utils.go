@@ -14,7 +14,7 @@ type Config struct {
 	RequestBody map[string]interface{} `json:"requestBody"`
 }
 
-// LoadConfig carga la configuración desde un archivo JSON
+// LoadConfig carga la configuración desde un archivo JSON.
 func LoadConfig(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {

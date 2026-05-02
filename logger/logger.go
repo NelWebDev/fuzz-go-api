@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// LogRequest registra las solicitudes HTTP en un archivo de log.
+// LogRequest registra las solicitudes HTTP.
 func LogRequest(method, endpoint, seed string, statusCode int, duration time.Duration, requestBody, responseBody string) {
 	logEntry := fmt.Sprintf(
 		"Hora: %s\nMétodo: %s\nEndpoint: %s\nSemilla: %s\nCuerpo de la solicitud: %s\nCódigo HTTP: %d\nDuración: %v\nRespuesta: %s\n\n",
