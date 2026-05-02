@@ -1,68 +1,86 @@
 # Fuzzing API Testing
 
-This project is a fuzz testing framework for API endpoints. It uses Golang to perform fuzz tests on GET and POST requests, with configurations stored in a JSON file for flexibility and ease of reuse.
+This project is a small Go framework for fuzz testing HTTP API endpoints. It currently supports GET and POST requests, reads endpoint settings from `config/config.json`, and logs each request outcome.
 
 ## Features
 
-- **GET and POST Testing**: Test API endpoints for GET and POST requests using fuzzing techniques.
-- **Configuration**: Easily manage base URL, endpoints, and request bodies via a JSON configuration file.
-- **Error Handling**: Logs errors effectively to identify issues.
-- **Fuzzing Reports**: Generate test reports automatically.
+- **GET and POST fuzzing**: Exercise API endpoints with Go fuzz tests.
+- **JSON configuration**: Manage the base URL, endpoints, and POST body from one file.
+- **Request logging**: Log method, endpoint, seed, response status, duration, request body, and response body.
+- **Local client tests**: Validate the API client without calling external services.
 
 ## Project Structure
 
 ```plaintext
 fuzzing-api/
-|-- config/
-|   `-- config.json           # Configuration file (base URL, endpoints, and request bodies)
-|-- fuzz/
-|   |-- fuzz_get_test.go      # Fuzz tests for GET requests
-|   `-- fuzz_post_test.go     # Fuzz tests for POST requests
-|-- utils/
-|   `-- utils.go              # Utility functions (configuration loading, helpers)
 |-- api/
-    `-- client.go             # API client implementation
+|   |-- api_client.go        # API client implementation
+|   `-- api_client_test.go   # Local client tests with httptest
+|-- config/
+|   `-- config.json          # Base URL, endpoints, and request body
+|-- fuzz/
+|   |-- fuzz_get_test.go     # Fuzz tests for GET requests
+|   `-- fuzz_post_test.go    # Fuzz tests for POST requests
+|-- logger/
+|   `-- logger.go            # Request logging helper
+|-- utils/
+|   |-- utils.go             # Configuration loading
+|   `-- validator.go         # HTTP status validator helper
+|-- go.mod
+`-- README.md
 ```
 
 ## Configuration
 
-The `config.json` file should be placed in the `config/` directory. Example:
+The `config/config.json` file uses this shape:
 
 ```json
 {
-  "base_url": "https://example.com/api/v1/",
+  "baseURL": "https://example.com/api/v1",
   "endpoints": {
     "get": "/resources",
     "post": "/resources"
   },
-  "bodies": {
-    "post": {
-      "id": 1,
-      "name": "example",
-      "completed": false
-    }
+  "requestBody": {
+    "id": 1,
+    "title": "Test Activity",
+    "dueDate": "2026-01-01T00:00:00Z",
+    "completed": false
   }
 }
 ```
 
 ## Usage
 
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/your-username/fuzzing-api.git
-   cd fuzzing-api
-   ```
+Run local package tests:
 
-2. **Run Tests:**
-   ```bash
-   go test -fuzz=FuzzGetEndpoint -fuzztime=30s ./fuzz
-   go test -fuzz=FuzzPostEndpoint -fuzztime=30s ./fuzz
-   ```
+```bash
+go test ./api ./logger ./utils
+```
 
-3. **Modify Configuration:**
-   Edit the `config/config.json` file to update base URLs, endpoints, or request bodies for your API.
+Run all tests:
+
+```bash
+go test ./...
+```
+
+Run fuzz tests:
+
+```bash
+FUZZ_API_EXTERNAL=1 go test -fuzz=FuzzGetEndpoint -fuzztime=30s ./fuzz
+FUZZ_API_EXTERNAL=1 go test -fuzz=FuzzPostEndpoint -fuzztime=30s ./fuzz
+```
+
+On PowerShell:
+
+```powershell
+$env:FUZZ_API_EXTERNAL = "1"
+go test -fuzz=FuzzGetEndpoint -fuzztime=30s ./fuzz
+go test -fuzz=FuzzPostEndpoint -fuzztime=30s ./fuzz
+```
+
+The fuzz tests call the API configured in `config/config.json`, so they are opt-in and require network access plus a reachable target service.
 
 ## Requirements
 
-- **Go version**: 1.20+
-
+- Go 1.20+
