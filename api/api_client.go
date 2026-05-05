@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -65,30 +66,51 @@ func joinPath(basePath, endpointPath string) string {
 
 // Get performs a GET request against an endpoint relative to BaseURL.
 func (c *APIClient) Get(endpoint string) (*http.Response, int, time.Duration, error) {
-	requestURL, err := c.ResolveEndpoint(endpoint)
-	if err != nil {
-		return nil, 0, 0, err
-	}
-
-	start := time.Now()
-	resp, err := c.Client.Get(requestURL)
-	duration := time.Since(start)
-	if err != nil {
-		return nil, 0, duration, err
-	}
-
-	return resp, resp.StatusCode, duration, nil
+	return c.Request(http.MethodGet, endpoint, "")
 }
 
 // Post performs a POST request against an endpoint relative to BaseURL.
 func (c *APIClient) Post(endpoint string, data string) (*http.Response, int, time.Duration, error) {
+	return c.Request(http.MethodPost, endpoint, data)
+}
+
+// Put performs a PUT request against an endpoint relative to BaseURL.
+func (c *APIClient) Put(endpoint string, data string) (*http.Response, int, time.Duration, error) {
+	return c.Request(http.MethodPut, endpoint, data)
+}
+
+// Patch performs a PATCH request against an endpoint relative to BaseURL.
+func (c *APIClient) Patch(endpoint string, data string) (*http.Response, int, time.Duration, error) {
+	return c.Request(http.MethodPatch, endpoint, data)
+}
+
+// Delete performs a DELETE request against an endpoint relative to BaseURL.
+func (c *APIClient) Delete(endpoint string) (*http.Response, int, time.Duration, error) {
+	return c.Request(http.MethodDelete, endpoint, "")
+}
+
+// Request performs an HTTP request against an endpoint relative to BaseURL.
+func (c *APIClient) Request(method, endpoint string, data string) (*http.Response, int, time.Duration, error) {
 	requestURL, err := c.ResolveEndpoint(endpoint)
 	if err != nil {
 		return nil, 0, 0, err
 	}
 
+	var body io.Reader
+	if data != "" {
+		body = bytes.NewBufferString(data)
+	}
+
+	req, err := http.NewRequest(method, requestURL, body)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	if data != "" {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
 	start := time.Now()
-	resp, err := c.Client.Post(requestURL, "application/json", bytes.NewBufferString(data))
+	resp, err := c.Client.Do(req)
 	duration := time.Since(start)
 	if err != nil {
 		return nil, 0, duration, err

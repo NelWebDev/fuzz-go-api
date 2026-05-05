@@ -8,8 +8,11 @@ import (
 type Config struct {
 	BaseURL   string `json:"baseURL"`
 	Endpoints struct {
-		Get  string `json:"get"`
-		Post string `json:"post"`
+		Get    string `json:"get"`
+		Post   string `json:"post"`
+		Put    string `json:"put"`
+		Patch  string `json:"patch"`
+		Delete string `json:"delete"`
 	} `json:"endpoints"`
 	RequestBody map[string]interface{} `json:"requestBody"`
 }
