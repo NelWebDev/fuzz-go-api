@@ -1,10 +1,10 @@
 # Fuzzing API Testing
 
-This project is a small Go framework for fuzz testing HTTP API endpoints. It currently supports GET and POST requests, reads endpoint settings from `config/config.json`, and logs each request outcome.
+This project is a small Go framework for fuzz testing HTTP API endpoints. It currently supports GET, POST, PUT, PATCH, and DELETE requests, reads endpoint settings from `config/config.json`, and logs each request outcome.
 
 ## Features
 
-- **GET and POST fuzzing**: Exercise API endpoints with Go fuzz tests.
+- **HTTP verb fuzzing**: Exercise GET, POST, PUT, PATCH, and DELETE endpoints with Go fuzz tests.
 - **JSON configuration**: Manage the base URL, endpoints, and POST body from one file.
 - **Request logging**: Log method, endpoint, seed, response status, duration, request body, and response body.
 - **Local client tests**: Validate the API client without calling external services.
@@ -20,7 +20,8 @@ fuzzing-api/
 |   `-- config.json          # Base URL, endpoints, and request body
 |-- fuzz/
 |   |-- fuzz_get_test.go     # Fuzz tests for GET requests
-|   `-- fuzz_post_test.go    # Fuzz tests for POST requests
+|   |-- fuzz_post_test.go    # Fuzz tests for POST requests
+|   `-- fuzz_write_methods_test.go # Fuzz tests for PUT, PATCH, and DELETE requests
 |-- logger/
 |   `-- logger.go            # Request logging helper
 |-- utils/
@@ -39,7 +40,10 @@ The `config/config.json` file uses this shape:
   "baseURL": "https://example.com/api/v1",
   "endpoints": {
     "get": "/resources",
-    "post": "/resources"
+    "post": "/resources",
+    "put": "/resources/1",
+    "patch": "/resources/1",
+    "delete": "/resources/1"
   },
   "requestBody": {
     "id": 1,
@@ -69,6 +73,9 @@ Run fuzz tests:
 ```bash
 FUZZ_API_EXTERNAL=1 go test -fuzz=FuzzGetEndpoint -fuzztime=30s ./fuzz
 FUZZ_API_EXTERNAL=1 go test -fuzz=FuzzPostEndpoint -fuzztime=30s ./fuzz
+FUZZ_API_EXTERNAL=1 go test -fuzz=FuzzPutEndpoint -fuzztime=30s ./fuzz
+FUZZ_API_EXTERNAL=1 go test -fuzz=FuzzPatchEndpoint -fuzztime=30s ./fuzz
+FUZZ_API_EXTERNAL=1 go test -fuzz=FuzzDeleteEndpoint -fuzztime=30s ./fuzz
 ```
 
 On PowerShell:
@@ -77,6 +84,9 @@ On PowerShell:
 $env:FUZZ_API_EXTERNAL = "1"
 go test -fuzz=FuzzGetEndpoint -fuzztime=30s ./fuzz
 go test -fuzz=FuzzPostEndpoint -fuzztime=30s ./fuzz
+go test -fuzz=FuzzPutEndpoint -fuzztime=30s ./fuzz
+go test -fuzz=FuzzPatchEndpoint -fuzztime=30s ./fuzz
+go test -fuzz=FuzzDeleteEndpoint -fuzztime=30s ./fuzz
 ```
 
 The fuzz tests call the API configured in `config/config.json`, so they are opt-in and require network access plus a reachable target service.

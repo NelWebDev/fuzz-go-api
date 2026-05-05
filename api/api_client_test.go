@@ -63,6 +63,12 @@ func TestGetAndPost(t *testing.T) {
 				t.Fatalf("body = %q, want %q", body, `{"id":1}`)
 			}
 			w.WriteHeader(http.StatusCreated)
+		case http.MethodPut:
+			w.WriteHeader(http.StatusOK)
+		case http.MethodPatch:
+			w.WriteHeader(http.StatusOK)
+		case http.MethodDelete:
+			w.WriteHeader(http.StatusNoContent)
 		default:
 			t.Fatalf("method = %q", r.Method)
 		}
@@ -87,5 +93,32 @@ func TestGetAndPost(t *testing.T) {
 	resp.Body.Close()
 	if statusCode != http.StatusCreated {
 		t.Fatalf("POST status = %d, want %d", statusCode, http.StatusCreated)
+	}
+
+	resp, statusCode, _, err = client.Put("/Activities", `{"id":1}`)
+	if err != nil {
+		t.Fatalf("Put returned error: %v", err)
+	}
+	resp.Body.Close()
+	if statusCode != http.StatusOK {
+		t.Fatalf("PUT status = %d, want %d", statusCode, http.StatusOK)
+	}
+
+	resp, statusCode, _, err = client.Patch("/Activities", `{"id":1}`)
+	if err != nil {
+		t.Fatalf("Patch returned error: %v", err)
+	}
+	resp.Body.Close()
+	if statusCode != http.StatusOK {
+		t.Fatalf("PATCH status = %d, want %d", statusCode, http.StatusOK)
+	}
+
+	resp, statusCode, _, err = client.Delete("/Activities")
+	if err != nil {
+		t.Fatalf("Delete returned error: %v", err)
+	}
+	resp.Body.Close()
+	if statusCode != http.StatusNoContent {
+		t.Fatalf("DELETE status = %d, want %d", statusCode, http.StatusNoContent)
 	}
 }

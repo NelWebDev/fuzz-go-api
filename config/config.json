@@ -2,7 +2,10 @@
   "baseURL": "https://fakerestapi.azurewebsites.net/api/v1",
   "endpoints": {
     "get": "/Activities",
-    "post": "/Activities"
+    "post": "/Activities",
+    "put": "/Activities/1",
+    "patch": "/Activities/1",
+    "delete": "/Activities/1"
   },
   "requestBody": {
     "id": 1,
