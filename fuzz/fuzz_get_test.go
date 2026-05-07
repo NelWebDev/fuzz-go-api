@@ -46,6 +46,9 @@ func FuzzGetEndpoint(f *testing.F) {
 		resp, statusCode, duration, err := client.Get(seed)
 		if err != nil {
 			logger.LogRequest("GET", requestURL, seed, 0, duration, "", fmt.Sprintf("Error: %v", err))
+			if logErr := logger.LogFinding("GET", requestURL, seed, 0, duration, "", "", err.Error()); logErr != nil {
+				t.Logf("Error al registrar el hallazgo GET: %v", logErr)
+			}
 			t.Errorf("Error en la solicitud GET: %v", err)
 			return
 		}
@@ -60,6 +63,9 @@ func FuzzGetEndpoint(f *testing.F) {
 
 		// Manejo de códigos HTTP.
 		if statusCode >= 500 {
+			if logErr := logger.LogFinding("GET", requestURL, seed, statusCode, duration, "", string(body), ""); logErr != nil {
+				t.Logf("Error al registrar el hallazgo GET: %v", logErr)
+			}
 			t.Errorf("Error del servidor: %d para la semilla: %s", statusCode, seed)
 		}
 	})

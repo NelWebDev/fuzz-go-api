@@ -7,6 +7,7 @@ This project is a small Go framework for fuzz testing HTTP API endpoints. It cur
 - **HTTP verb fuzzing**: Exercise GET, POST, PUT, PATCH, and DELETE endpoints with Go fuzz tests.
 - **JSON configuration**: Manage the base URL, endpoints, and POST body from one file.
 - **Request logging**: Log method, endpoint, seed, response status, duration, request body, and response body.
+- **Reproducible findings**: Store request errors and 5xx responses as JSON Lines artifacts for later triage.
 - **Local client tests**: Validate the API client without calling external services.
 
 ## Project Structure
@@ -23,7 +24,8 @@ fuzzing-api/
 |   |-- fuzz_post_test.go    # Fuzz tests for POST requests
 |   `-- fuzz_write_methods_test.go # Fuzz tests for PUT, PATCH, and DELETE requests
 |-- logger/
-|   `-- logger.go            # Request logging helper
+|   |-- logger.go            # Request logging and findings helpers
+|   `-- logger_test.go       # Findings artifact tests
 |-- utils/
 |   |-- utils.go             # Configuration loading
 |   `-- validator.go         # HTTP status validator helper
@@ -90,6 +92,20 @@ go test -fuzz=FuzzDeleteEndpoint -fuzztime=30s ./fuzz
 ```
 
 The fuzz tests call the API configured in `config/config.json`, so they are opt-in and require network access plus a reachable target service.
+
+When a fuzz test hits a request error or an HTTP 5xx response, it appends a reproducible finding to `artifacts/fuzz-findings.jsonl`. Override the output path with `FUZZ_API_FINDINGS`:
+
+```bash
+FUZZ_API_FINDINGS=./tmp/findings.jsonl FUZZ_API_EXTERNAL=1 go test -fuzz=FuzzGetEndpoint -fuzztime=30s ./fuzz
+```
+
+On PowerShell:
+
+```powershell
+$env:FUZZ_API_FINDINGS = ".\tmp\findings.jsonl"
+$env:FUZZ_API_EXTERNAL = "1"
+go test -fuzz=FuzzGetEndpoint -fuzztime=30s ./fuzz
+```
 
 ## Requirements
 

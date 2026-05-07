@@ -57,6 +57,9 @@ func fuzzEndpoint(f *testing.F, method string, configuredEndpoint func(*utils.Co
 		resp, statusCode, duration, err := client.Request(method, seed, requestBody)
 		if err != nil {
 			logger.LogRequest(method, requestURL, seed, 0, duration, requestBody, fmt.Sprintf("Error: %v", err))
+			if logErr := logger.LogFinding(method, requestURL, seed, 0, duration, requestBody, "", err.Error()); logErr != nil {
+				t.Logf("Error al registrar el hallazgo %s: %v", method, logErr)
+			}
 			t.Errorf("Error en la solicitud %s: %v", method, err)
 			return
 		}
@@ -70,6 +73,9 @@ func fuzzEndpoint(f *testing.F, method string, configuredEndpoint func(*utils.Co
 		logger.LogRequest(method, requestURL, seed, statusCode, duration, requestBody, string(responseBody))
 
 		if statusCode >= 500 {
+			if logErr := logger.LogFinding(method, requestURL, seed, statusCode, duration, requestBody, string(responseBody), ""); logErr != nil {
+				t.Logf("Error al registrar el hallazgo %s: %v", method, logErr)
+			}
 			t.Errorf("Error del servidor: %d para la semilla: %s", statusCode, seed)
 		}
 	})

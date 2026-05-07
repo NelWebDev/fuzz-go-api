@@ -3,6 +3,8 @@
 /pkg
 /testdata/fuzz
 /reports
+/artifacts
+/.gocache
 
 # Archivos de editor
 .idea/
