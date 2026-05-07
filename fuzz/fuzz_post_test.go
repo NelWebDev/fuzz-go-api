@@ -52,6 +52,9 @@ func FuzzPostEndpoint(f *testing.F) {
 		resp, statusCode, duration, err := client.Post(seed, string(bodyJSON))
 		if err != nil {
 			logger.LogRequest("POST", requestURL, seed, 0, duration, string(bodyJSON), fmt.Sprintf("Error: %v", err))
+			if logErr := logger.LogFinding("POST", requestURL, seed, 0, duration, string(bodyJSON), "", err.Error()); logErr != nil {
+				t.Logf("Error al registrar el hallazgo POST: %v", logErr)
+			}
 			t.Errorf("Error en la solicitud POST: %v", err)
 			return
 		}
@@ -66,6 +69,9 @@ func FuzzPostEndpoint(f *testing.F) {
 
 		// Manejo de códigos HTTP.
 		if statusCode >= 500 {
+			if logErr := logger.LogFinding("POST", requestURL, seed, statusCode, duration, string(bodyJSON), string(respBody), ""); logErr != nil {
+				t.Logf("Error al registrar el hallazgo POST: %v", logErr)
+			}
 			t.Errorf("Error del servidor: %d para la semilla: %s", statusCode, seed)
 		}
 	})
