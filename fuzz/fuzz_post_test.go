@@ -1,7 +1,6 @@
 package fuzz
 
 import (
-	"encoding/json"
 	"fmt"
 	"fuzzing-api/api"
 	"fuzzing-api/logger"
@@ -22,37 +21,18 @@ func FuzzPostEndpoint(f *testing.F) {
 	}
 
 	client := api.NewAPIClient(config.BaseURL)
-	for _, seed := range []string{
-		config.Endpoints.Post,
-		"/Activities/0",
-		"/Activities/-1",
-		"/Activities/2147483647",
-		"/Activities/000001",
-		"/Activities/abc",
-		"/Activities/1.5",
-		"/Activities?validate=true&validate=false",
-		"/Activities?page=-1&pageSize=999999",
-		"/Activities/%2e%2e/%2e%2e",
-		"/Activities/%20",
-	} {
-		f.Add(seed)
-	}
+	addEndpointBodySeeds(f.Add, postEndpointSeeds(config), postBodySeeds(config))
 
-	f.Fuzz(func(t *testing.T, seed string) {
+	f.Fuzz(func(t *testing.T, seed string, requestBody string) {
 		requestURL, err := client.ResolveEndpoint(seed)
 		if err != nil {
 			t.Skipf("Semilla con endpoint inválido %q: %v", seed, err)
 		}
 
-		bodyJSON, err := json.Marshal(config.RequestBody)
+		resp, statusCode, duration, err := client.Post(seed, requestBody)
 		if err != nil {
-			t.Fatalf("Error al serializar el cuerpo POST: %v", err)
-		}
-
-		resp, statusCode, duration, err := client.Post(seed, string(bodyJSON))
-		if err != nil {
-			logger.LogRequest("POST", requestURL, seed, 0, duration, string(bodyJSON), fmt.Sprintf("Error: %v", err))
-			if logErr := logger.LogFinding("POST", requestURL, seed, 0, duration, string(bodyJSON), "", err.Error()); logErr != nil {
+			logger.LogRequest("POST", requestURL, seed, 0, duration, requestBody, fmt.Sprintf("Error: %v", err))
+			if logErr := logger.LogFinding("POST", requestURL, seed, 0, duration, requestBody, "", err.Error()); logErr != nil {
 				t.Logf("Error al registrar el hallazgo POST: %v", logErr)
 			}
 			t.Errorf("Error en la solicitud POST: %v", err)
@@ -65,11 +45,11 @@ func FuzzPostEndpoint(f *testing.F) {
 			t.Errorf("Error al leer la respuesta POST: %v", err)
 			return
 		}
-		logger.LogRequest("POST", requestURL, seed, statusCode, duration, string(bodyJSON), string(respBody))
+		logger.LogRequest("POST", requestURL, seed, statusCode, duration, requestBody, string(respBody))
 
 		// Manejo de códigos HTTP.
 		if statusCode >= 500 {
-			if logErr := logger.LogFinding("POST", requestURL, seed, statusCode, duration, string(bodyJSON), string(respBody), ""); logErr != nil {
+			if logErr := logger.LogFinding("POST", requestURL, seed, statusCode, duration, requestBody, string(respBody), ""); logErr != nil {
 				t.Logf("Error al registrar el hallazgo POST: %v", logErr)
 			}
 			t.Errorf("Error del servidor: %d para la semilla: %s", statusCode, seed)
