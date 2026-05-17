@@ -21,19 +21,7 @@ func FuzzGetEndpoint(f *testing.F) {
 	}
 
 	client := api.NewAPIClient(config.BaseURL)
-	for _, seed := range []string{
-		config.Endpoints.Get,
-		"/Activities/0",
-		"/Activities/-1",
-		"/Activities/2147483647",
-		"/Activities/000001",
-		"/Activities/abc",
-		"/Activities/1.5",
-		"/Activities?completed=true&completed=false",
-		"/Activities?page=-1&pageSize=999999",
-		"/Activities/%2e%2e/%2e%2e",
-		"/Activities/%20",
-	} {
+	for _, seed := range getEndpointSeeds(config) {
 		f.Add(seed)
 	}
 
