@@ -6,6 +6,7 @@ This project is a small Go framework for fuzz testing HTTP API endpoints. It cur
 
 - **HTTP verb fuzzing**: Exercise GET, POST, PUT, PATCH, and DELETE endpoints with separate Go fuzz targets.
 - **Verb-specific seeds**: Keep endpoint and request-body seeds tuned to each HTTP method.
+- **Shared fuzz execution**: Run all HTTP methods through common helpers for consistent logging, finding capture, and 5xx handling.
 - **JSON configuration**: Manage the base URL, endpoints, and POST body from one file.
 - **Request logging**: Log method, endpoint, seed, response status, duration, request body, and response body.
 - **Reproducible findings**: Store request errors and 5xx responses as JSON Lines artifacts for later triage.
@@ -21,9 +22,9 @@ fuzzing-api/
 |-- config/
 |   `-- config.json          # Base URL, endpoints, and request body
 |-- fuzz/
-|   |-- fuzz_get_test.go     # Fuzz tests for GET requests
-|   |-- fuzz_post_test.go    # Fuzz tests for POST requests
-|   |-- fuzz_write_methods_test.go # Fuzz tests for PUT, PATCH, and DELETE requests
+|   |-- fuzz_get_test.go     # GET fuzz target wrapper
+|   |-- fuzz_post_test.go    # POST fuzz target wrapper
+|   |-- fuzz_write_methods_test.go # Shared fuzz helpers plus PUT, PATCH, and DELETE wrappers
 |   `-- seeds_test.go        # Verb-specific endpoint and body seeds
 |-- logger/
 |   |-- logger.go            # Request logging and findings helpers
