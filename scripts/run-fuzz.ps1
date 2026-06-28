@@ -3,6 +3,7 @@ param(
     [string]$FuzzTime = "30s",
     [string]$ArtifactsRoot = "artifacts",
     [int]$KeepRuns = 10,
+    [int]$MaxLogBytes = 8192,
     [string[]]$Targets = @(
         "FuzzGetEndpoint",
         "FuzzPostEndpoint",
@@ -10,7 +11,8 @@ param(
         "FuzzPatchEndpoint",
         "FuzzDeleteEndpoint"
     ),
-    [switch]$StopOnFailure
+    [switch]$StopOnFailure,
+    [switch]$QuietRequests
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,6 +29,8 @@ New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 
 $previousExternal = $env:FUZZ_API_EXTERNAL
 $previousFindings = $env:FUZZ_API_FINDINGS
+$previousMaxLogBytes = $env:FUZZ_API_MAX_LOG_BYTES
+$previousLogRequests = $env:FUZZ_API_LOG_REQUESTS
 $results = @()
 
 try {
@@ -34,12 +38,16 @@ try {
 
     $env:FUZZ_API_EXTERNAL = "1"
     $env:FUZZ_API_FINDINGS = $findingsPath
+    $env:FUZZ_API_MAX_LOG_BYTES = $MaxLogBytes.ToString()
+    $env:FUZZ_API_LOG_REQUESTS = if ($QuietRequests) { "0" } else { "1" }
 
     @(
         "Fuzz run: $timestamp",
         "Repository: $repoRoot",
         "Fuzz time: $FuzzTime",
         "Findings: $findingsPath",
+        "Max log bytes: $MaxLogBytes",
+        "Request logs: $(if ($QuietRequests) { 'disabled' } else { 'enabled' })",
         "Targets: $($Targets -join ', ')",
         ""
     ) | Set-Content -Path $summaryPath
@@ -113,4 +121,6 @@ finally {
     Pop-Location
     $env:FUZZ_API_EXTERNAL = $previousExternal
     $env:FUZZ_API_FINDINGS = $previousFindings
+    $env:FUZZ_API_MAX_LOG_BYTES = $previousMaxLogBytes
+    $env:FUZZ_API_LOG_REQUESTS = $previousLogRequests
 }
