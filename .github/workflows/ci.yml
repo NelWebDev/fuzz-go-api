@@ -13,6 +13,8 @@ jobs:
     name: Go checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      CI_REPORT_DIR: reports/ci
 
     steps:
       - name: Checkout
@@ -25,21 +27,67 @@ jobs:
           cache: true
           cache-dependency-path: go.mod
 
+      - name: Prepare CI reports
+        run: mkdir -p "$CI_REPORT_DIR"
+
       - name: Verify module files
         run: |
-          go mod tidy
-          git diff --exit-code -- go.mod go.sum
+          set -o pipefail
+          {
+            go mod tidy
+            git diff --exit-code -- go.mod go.sum
+          } 2>&1 | tee "$CI_REPORT_DIR/module-files.log"
 
       - name: Check formatting
         run: |
+          set -o pipefail
           files="$(gofmt -l .)"
+          printf "%s\n" "$files" | tee "$CI_REPORT_DIR/formatting.log"
           if [ -n "$files" ]; then
-            echo "$files"
             exit 1
           fi
 
       - name: Run vet
-        run: go vet ./...
+        run: |
+          set -o pipefail
+          go vet ./... 2>&1 | tee "$CI_REPORT_DIR/vet.log"
 
       - name: Run tests
-        run: go test -race -count=1 ./...
+        run: |
+          set -o pipefail
+          go test -race -count=1 ./... 2>&1 | tee "$CI_REPORT_DIR/tests.log"
+
+      - name: Write CI diagnostics summary
+        if: always()
+        run: |
+          {
+            echo "## CI diagnostics"
+            echo ""
+            echo "- Workflow: \`${{ github.workflow }}\`"
+            echo "- Run: \`${{ github.run_id }}.${{ github.run_attempt }}\`"
+            echo "- Ref: \`${{ github.ref_name }}\`"
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo ""
+            echo "### Logs"
+            for log in "$CI_REPORT_DIR"/*.log; do
+              [ -f "$log" ] || continue
+              name="$(basename "$log")"
+              echo ""
+              echo "<details>"
+              echo "<summary>$name</summary>"
+              echo ""
+              echo '```text'
+              tail -n 80 "$log"
+              echo '```'
+              echo "</details>"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload CI diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/ci
+          retention-days: 14
+          if-no-files-found: ignore
