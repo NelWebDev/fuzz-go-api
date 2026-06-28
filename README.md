@@ -29,6 +29,8 @@ fuzzing-api/
 |-- logger/
 |   |-- logger.go            # Request logging and findings helpers
 |   `-- logger_test.go       # Findings artifact tests
+|-- scripts/
+|   `-- run-fuzz.ps1         # PowerShell runner that stores artifacts per execution
 |-- utils/
 |   |-- utils.go             # Configuration loading
 |   `-- validator.go         # HTTP status validator helper
@@ -71,6 +73,32 @@ Run all tests:
 
 ```bash
 go test ./...
+```
+
+Run every fuzz target on PowerShell and save artifacts per execution:
+
+```powershell
+.\scripts\run-fuzz.ps1 -FuzzTime 30s
+```
+
+The runner creates a timestamped directory under `artifacts/` for each execution:
+
+```plaintext
+artifacts/
+`-- 2026-06-28_10-30-15/
+    |-- FuzzGetEndpoint.log
+    |-- FuzzPostEndpoint.log
+    |-- FuzzPutEndpoint.log
+    |-- FuzzPatchEndpoint.log
+    |-- FuzzDeleteEndpoint.log
+    |-- fuzz-findings.jsonl
+    `-- summary.txt
+```
+
+By default the script keeps the latest 10 execution directories and removes older ones. Override that with `-KeepRuns`, or use `-KeepRuns 0` to disable cleanup:
+
+```powershell
+.\scripts\run-fuzz.ps1 -FuzzTime 5m -KeepRuns 20
 ```
 
 Run fuzz tests:
