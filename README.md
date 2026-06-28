@@ -101,6 +101,18 @@ By default the script keeps the latest 10 execution directories and removes olde
 .\scripts\run-fuzz.ps1 -FuzzTime 5m -KeepRuns 20
 ```
 
+Request bodies, response bodies, and error text are truncated to 8192 bytes before being stored in logs or findings. Override the limit with `-MaxLogBytes`; use `0` to disable truncation:
+
+```powershell
+.\scripts\run-fuzz.ps1 -FuzzTime 30s -MaxLogBytes 4096
+```
+
+For longer campaigns, keep `fuzz-findings.jsonl` and summaries but suppress per-request logging noise with `-QuietRequests`:
+
+```powershell
+.\scripts\run-fuzz.ps1 -FuzzTime 10m -QuietRequests
+```
+
 Run fuzz tests:
 
 ```bash
