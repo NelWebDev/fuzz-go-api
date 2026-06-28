@@ -75,6 +75,8 @@ Run all tests:
 go test ./...
 ```
 
+GitHub Actions writes a lightweight CI diagnostics summary for every run and uploads `reports/ci` as an artifact for 14 days. The summary includes the latest lines from module verification, formatting, vet, and test logs so failures are easier to triage from the workflow page.
+
 Run every fuzz target on PowerShell and save artifacts per execution:
 
 ```powershell
