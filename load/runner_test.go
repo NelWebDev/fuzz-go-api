@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -11,9 +12,9 @@ import (
 )
 
 func TestRunExecutesConfiguredRequests(t *testing.T) {
-	var seen int
+	var seen int64
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		seen++
+		atomic.AddInt64(&seen, 1)
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer server.Close()
@@ -29,8 +30,8 @@ func TestRunExecutesConfiguredRequests(t *testing.T) {
 		t.Fatalf("Run returned error: %v", err)
 	}
 
-	if seen != 5 {
-		t.Fatalf("seen = %d, want 5", seen)
+	if got := atomic.LoadInt64(&seen); got != 5 {
+		t.Fatalf("seen = %d, want 5", got)
 	}
 	if report.TotalRequests != 5 || report.Successful != 5 || report.Failed != 0 {
 		t.Fatalf("report = %+v", report)
