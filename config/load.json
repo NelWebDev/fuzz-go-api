@@ -1,0 +1,26 @@
+{
+  "baseURL": "https://fakerestapi.azurewebsites.net/api/v1",
+  "scenarios": [
+    {
+      "name": "list-activities",
+      "method": "GET",
+      "endpoint": "/Activities"
+    },
+    {
+      "name": "get-activity",
+      "method": "GET",
+      "endpoint": "/Activities/1"
+    },
+    {
+      "name": "create-activity",
+      "method": "POST",
+      "endpoint": "/Activities",
+      "body": {
+        "id": 1,
+        "title": "Load Test Activity",
+        "dueDate": "2026-01-01T00:00:00Z",
+        "completed": false
+      }
+    }
+  ]
+}
